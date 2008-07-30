@@ -1,25 +1,16 @@
-CC=gcc
-CFLAGS=-m32 -Wall -g -Os -ffreestanding -nostdinc -I. -MMD -MF .$@.d
-OBJCOPY=objcopy
-ASFLAGS=-g --32
-TARGET=os
-TARGET_OBJ= os.o output.o setup.o loader.o entry.o
-DEPS=$(wildcard .*.d)
+SUBDIRS=timer/
+MAKEFLAGS += -rR --no-print-directory
 
-all: $(TARGET) $(TARGET).bin
+all: $(addsuffix .built,$(SUBDIRS))
 
-$(TARGET): os.lds $(TARGET_OBJ)
-	$(LD) $(LDFLAGS) -T os.lds -melf_i386 -o $(TARGET) $(TARGET_OBJ)
+clean: $(addsuffix .cleaned,$(SUBDIRS))
 
-%.o: %.s
-	$(AS) $(ASFLAGS) -o $@ $^
+%/.built: %
+	@$(MAKE) -C $^ all
 
-%.bin: %
-	$(OBJCOPY) -O binary $< $@
+%/.cleaned: %
+	@$(MAKE) -C $^ clean
 
-clean:
-	rm -f $(TARGET_OBJ) $(TARGET) $(TARGET).bin $(DEPS)
+FORCE:
 
-.PHONY: all clean
-
--include $(DEPS)
+.PHONY: all clean FORCE

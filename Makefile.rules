@@ -1,0 +1,25 @@
+CC=gcc
+CFLAGS=-m32 -Wall -g -Os -ffreestanding -nostdinc -I. -MMD -MF .$@.d
+AS=as
+ASFLAGS=-g --32
+LD=ld
+OBJCOPY=objcopy
+DEPS=$(wildcard .*.d)
+
+all: $(TARGET)
+
+clean:
+	rm -f $(CLEAN_FILES) $(DEPS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+%.o: %.s
+	$(AS) $(ASFLAGS) -o $@ $<
+
+%.bin: %
+	$(OBJCOPY) -O binary $< $@
+
+.PHONY: all clean
+
+-include $(DEPS)
