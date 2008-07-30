@@ -1,5 +1,7 @@
 CC=gcc
-CFLAGS=-m32 -Wall -g -Os -ffreestanding -nostdinc -I. -MMD -MF .$@.d
+CFLAGS_COMMON=-Wall -g -I. -MMD -MF .$@.d
+CFLAGS=$(CFLAGS_COMMON) -m32 -Os -ffreestanding -nostdinc -MMD -MF .$@.d
+CFLAGS_HOST=$(CFLAGS_COMMON) -O2 -MMD -MF .$@.d
 AS=as
 ASFLAGS=-g --32
 LD=ld

@@ -1,4 +1,4 @@
-SUBDIRS=timer/
+SUBDIRS=01_lds/ timer/
 MAKEFLAGS += -rR --no-print-directory
 
 all: $(addsuffix .built,$(SUBDIRS))

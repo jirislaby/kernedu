@@ -1,1 +1,2 @@
+Unless there is not README deeper in directories, run
 make && qemu -hda os.bin
