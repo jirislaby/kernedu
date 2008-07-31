@@ -9,7 +9,7 @@ SECTIONS
 	}
 	. = 0x150;
 	.data.loader : {
-		*(.data.loader)
+		loader.o(.data.loader)
 	}
 	. = 0x1fe;
 	.rodata.loader_magic : {
