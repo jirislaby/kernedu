@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS_COMMON=-Wall -g -I. -I$(TOPDIR)/common -MMD -MF .$@.d
-CFLAGS=$(CFLAGS_COMMON) -m32 -Os -ffreestanding -nostdinc -MMD -MF .$@.d
-CFLAGS_HOST=$(CFLAGS_COMMON) -O2 -MMD -MF .$@.d
+CFLAGS=$(CFLAGS_COMMON) -m32 -Os -ffreestanding -nostdinc
+CFLAGS_HOST=$(CFLAGS_COMMON) -O2
 AS=as
 ASFLAGS=-g --32
 LD=ld
