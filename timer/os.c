@@ -3,6 +3,8 @@
 #include <io.h>
 #include <output.h>
 
+#include "timer.h"
+
 static void handler(int irq)
 {
 	print_num(irq);

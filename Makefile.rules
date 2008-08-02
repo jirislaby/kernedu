@@ -1,10 +1,11 @@
 CC=gcc
-CFLAGS_COMMON=-Wall -g -I. -MMD -MF .$@.d
+CFLAGS_COMMON=-Wall -g -I. -I$(TOPDIR)/common -MMD -MF .$@.d
 CFLAGS=$(CFLAGS_COMMON) -m32 -Os -ffreestanding -nostdinc -MMD -MF .$@.d
 CFLAGS_HOST=$(CFLAGS_COMMON) -O2 -MMD -MF .$@.d
 AS=as
 ASFLAGS=-g --32
 LD=ld
+AR=ar
 OBJCOPY=objcopy
 DEPS=$(wildcard .*.d)
 
@@ -13,14 +14,19 @@ all: $(TARGET)
 clean:
 	rm -f $(CLEAN_FILES) $(DEPS)
 
-%.o: %.c
+%.o: %.c Makefile $(TOPDIR)/Makefile.rules
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o: %.s
+%.o: %.s Makefile $(TOPDIR)/Makefile.rules
 	$(AS) $(ASFLAGS) -o $@ $<
 
 %.bin: %
 	$(OBJCOPY) -O binary $< $@
+
+%.a:
+	$(AR) cru $@ $^
+
+COMMON_OBJS=$(TOPDIR)/common/lib.a
 
 .PHONY: all clean
 

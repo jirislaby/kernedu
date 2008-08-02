@@ -1,17 +1,5 @@
-extern void main(void);
-extern void halt(void);
-
-struct handler {
-	void (*handler)(int);
-	int irq;
-};
-
-#define IRQ_HANDLER(func, irqn) \
-	static const struct handler __irq_handler_ ## func ## irqn \
-		__attribute__((section(".rodata.handlers"), used)) = { \
-		.handler = func, \
-		.irq = irqn, \
-	}
+#ifndef __IO_H_FILE
+#define __IO_H_FILE
 
 static inline unsigned short set_es(unsigned short es)
 {
@@ -42,3 +30,5 @@ static inline void cli(void)
 {
 	asm volatile("cli" : : : "memory");
 }
+
+#endif

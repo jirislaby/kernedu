@@ -1,9 +1,11 @@
 TOPDIR=..
 TARGET=os os.bin
-os_OBJS= os.o output.o setup.o loader.o entry.o
-CLEAN_FILES += $(os_OBJS) $(TARGET)
+LOBJS=os.o setup.o loader.o entry.o
+OBJS=$(LOBJS) $(COMMON_OBJS)
+CLEAN_FILES += $(LOBJS) $(TARGET)
+USE_COMMON_LIB=1
 
 include $(TOPDIR)/Makefile.rules
 
-os: os.lds $(os_OBJS)
-	$(LD) $(LDFLAGS) -T os.lds -melf_i386 -o $@ $(os_OBJS)
+os: os.lds $(OBJS)
+	$(LD) $(LDFLAGS) -T os.lds -melf_i386 -o $@ $(OBJS)
