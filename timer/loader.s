@@ -3,10 +3,8 @@
 
 .globl startup
 startup:
-.byte 0xea
-.word start, 0x7c0
-
-start:
+	ljmp $0x7c0, $0f
+0:
 cli
 cld
 
