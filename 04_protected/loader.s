@@ -20,6 +20,8 @@ startup:
 	callw print
 	popw %ax
 
+	callw get_cursor_line
+
 	lgdtl gdtr_contents
 	movl %cr0, %eax
 	orl $1, %eax
@@ -32,6 +34,7 @@ protected:
 	movw %ax, %ds
 	movw %ax, %es
 	movw %ax, %ss
+	movl $4096, %esp
 
 	xorw %ax, %ax		/* null segment (0*8)*/
 	movw %ax, %fs
@@ -56,9 +59,19 @@ print:
 0:
 	ret
 
+get_cursor_line:
+	movb $0x03, %ah
+	xorw %bx, %bx
+	int $0x10
+	movb %dh, cursor_line
+	ret
+
 .section .data.loader
 hello_text:
 	.asciz "Hello world from assembly\n\r"
+.globl cursor_line
+cursor_line:
+	.short 0
 gdtr_contents:
 	.short 8 * 3 - 1 /* size * (null + code + data) - 1 */
 	.long gdt + 0x7c00
