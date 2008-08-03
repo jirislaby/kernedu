@@ -16,36 +16,35 @@ startup:
 	movw %ax, %ss
 	xorl %esp, %esp
 
+	pushw $hello_text
+	callw print
+	popw %ax
+
 	lgdtl gdtr_contents
 	movl %cr0, %eax
 	orl $1, %eax
 	movl %eax, %cr0
 	
-	ljmpl $8, $protected
+	ljmpl $8, $protected	/* code segment (1*8) */
 protected:
 .code32
-	movw $16, %ax
+	movw $16, %ax		/* data segment (2*8) */
 	movw %ax, %ds
 	movw %ax, %es
 	movw %ax, %ss
-	xorw %ax, %ax
+
+	xorw %ax, %ax		/* null segment (0*8)*/
 	movw %ax, %fs
 	movw %ax, %gs
-
-	pushl $hello_text
-	calll print
-	popl %eax
 
 	calll main		/* a C function */
 loop:
 	hlt
 	jmp loop
 
-.globl print
+.code16
 print:
-	pushl %esi
-	pushl %ebx
-	movl 8(%esp), %esi
+	movw 2(%esp), %si
 	movb $0x0e, %ah
 	movw $0x0007, %bx
 0:
@@ -55,8 +54,6 @@ print:
 	int $0x10		/* call BIOS to show this char */
 	jmp 0b
 0:
-	popl %ebx
-	popl %esi
 	ret
 
 .section .data.loader
