@@ -1,5 +1,4 @@
-#include <code16.h>
-
+#include <io.h>
 #include <setup.h>
 
 void clear_bss(void)
@@ -9,4 +8,11 @@ void clear_bss(void)
 
 	for (a = __bss_start; a < __bss_end; a++)
 		*a = 0;
+}
+
+void halt(void)
+{
+	cli();
+	while (1)
+		hlt();
 }

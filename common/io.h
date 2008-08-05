@@ -1,14 +1,9 @@
 #ifndef __IO_H_FILE
 #define __IO_H_FILE
 
-static inline unsigned short set_es(unsigned short es)
-{
-	unsigned short old_es;
-	asm volatile("pushw %%es\n"
-		"movw %%ax, %%es\n"
-		"popw %%ax" : "=a" (old_es) : "a" (es));
-	return old_es;
-}
+#define pa(x)		((x) - 0x7c00)
+
+#define barrier()	__asm__ __volatile__("": : :"memory")
 
 static inline void outb(unsigned char val, unsigned short p)
 {
@@ -29,6 +24,11 @@ static inline void sti(void)
 static inline void cli(void)
 {
 	asm volatile("cli" : : : "memory");
+}
+
+static inline void hlt(void)
+{
+	asm volatile("hlt" : : : "memory");
 }
 
 #endif

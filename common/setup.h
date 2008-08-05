@@ -3,4 +3,6 @@
 
 extern void clear_bss(void);
 
+extern void __attribute__((noreturn)) halt(void);
+
 #endif

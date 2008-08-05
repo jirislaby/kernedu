@@ -1,37 +1,48 @@
-#include <code16.h>
-
 #include <io.h>
 #include <output.h>
 
-static inline void print_char(short ch, short x, short y)
-{
-	asm volatile("stosw" : : "a" (ch), "D" (x*2 + y*80*2));
-}
-
 static unsigned char scr_x, scr_y;
+static unsigned short *vram = (void *)pa(0xb8000);
+
+static inline void print_char(unsigned short ch, unsigned char x,
+		unsigned char y)
+{
+	vram[x + y * 80] = ch;
+}
 
 void clear_screen(void)
 {
-	unsigned short x, oe = set_es(0xb800);
+	unsigned short x;
 
 	for (x = 0; x < 80 * 25; x++)
 		print_char(0x0700, x % 80, x / 80);
-
-	set_es(oe);
 
 	scr_x = 0;
 	scr_y = 0;
 }
 
+/* causes to move lines one line upper and clean the bottom line */
+static void roll_display(void)
+{
+	unsigned int x, y;
+
+	for (y = 1; y < 25; y++)
+		for (x = 0; x < 80; x++) {
+			vram[x + (y - 1) * 80] = vram[x + y * 80];
+			if (y == 24)
+				vram[x + y * 80] = 0x0700;
+		}
+}
+
 void print(const char *text)
 {
-	unsigned short oe = set_es(0xb800);
-
 	while (*text) {
 		if (*text == '\r' || *text == '\n')
 			goto line_feed;
-		if (scr_y >= 25)
-			clear_screen();
+		if (scr_y >= 25) {
+			roll_display();
+			scr_y--;
+		}
 		print_char(0x0700 | *text, scr_x, scr_y);
 		if (++scr_x >= 80) {
 line_feed:
@@ -40,8 +51,6 @@ line_feed:
 		}
 		text++;
 	}
-
-	set_es(oe);
 }
 
 void print_num(unsigned long num)
