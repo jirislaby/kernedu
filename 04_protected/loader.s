@@ -20,23 +20,28 @@ startup:
 	callw print
 	popw %ax
 
-	callw get_cursor_line
+	/* get y cursor position from the BIOS and put it into cursor_line */
+	movb $0x03, %ah
+	xorw %bx, %bx
+	int $0x10
+	movb %dh, cursor_line
 
+	/* protected mode */
 	lgdtl gdtr_contents
 	movl %cr0, %eax
-	orl $1, %eax
+	orl $1, %eax		/* 1 is protected bit */
 	movl %eax, %cr0
 	
-	ljmpl $8, $protected	/* code segment (1*8) */
-protected:
+	ljmpl $8, $0f		/* code segment (1*8), update IP */
+0:
 .code32
 	movw $16, %ax		/* data segment (2*8) */
 	movw %ax, %ds
 	movw %ax, %es
 	movw %ax, %ss
-	movl $4096, %esp
+	movl $(2*1024*1024), %esp	/* stack at 2M */
 
-	xorw %ax, %ax		/* null segment (0*8)*/
+	xorw %ax, %ax		/* null segment (0*8) */
 	movw %ax, %fs
 	movw %ax, %gs
 
@@ -57,13 +62,6 @@ print:
 	int $0x10		/* call BIOS to show this char */
 	jmp 0b
 0:
-	ret
-
-get_cursor_line:
-	movb $0x03, %ah
-	xorw %bx, %bx
-	int $0x10
-	movb %dh, cursor_line
 	ret
 
 .section .data.loader
