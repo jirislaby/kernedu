@@ -45,4 +45,4 @@ print:
 
 .section .data.loader
 hello_text:
-.asciz "Hello world from assembly\n\r"
+	.asciz "Hello world from assembly\n\r"

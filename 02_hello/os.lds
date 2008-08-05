@@ -7,7 +7,7 @@ SECTIONS
 	.text.loader : {
 		loader.o(.text.loader)
 	}
-	. = 0x150;
+	. = 0xa0;
 	.data.loader : {
 		loader.o(.data.loader)
 	}

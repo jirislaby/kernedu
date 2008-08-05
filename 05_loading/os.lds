@@ -22,22 +22,17 @@ SECTIONS
 	}
 	.text : {
 		_text = .;
-		*(.text)
+		os.o(.text)
 	}
 	.data : {
-		*(.data)
+		os.o(.data)
 	}
 	.rodata : {
-		*(.rodata)
-	}
-	.rodata.handlers : {
-		__handlers = .;
-		*(.rodata.handlers)
-		LONG(0);
+		os.o(.rodata)
 	}
 	.bss : {
 		__bss_start = .;
-		*(.bss)
+		os.o(.bss)
 		__bss_end = .;
 	}
 	.rodata.os_end_magic : {

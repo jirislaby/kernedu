@@ -17,14 +17,20 @@ startup:
 	xorl %esp, %esp
 
 	pushw $hello_text
-	callw print
-	popw %ax
+	calll print
+	addl $2, %esp
 
 	/* get y cursor position from the BIOS and put it into cursor_line */
 	movb $0x03, %ah
 	xorw %bx, %bx
 	int $0x10
 	movb %dh, cursor_line
+
+	/* set cursor position to [0,0] */
+	movb $0x02, %ah
+	xorb %bh, %bh
+	xorw %dx, %dx
+	int $0x10
 
 	/* protected mode */
 	lgdtl gdtr_contents
@@ -52,7 +58,9 @@ loop:
 
 .code16
 print:
-	movw 2(%esp), %si
+	pushw %si
+	pushw %bx
+	movw 8(%esp), %si
 	movb $0x0e, %ah
 	movw $0x0007, %bx
 0:
@@ -62,6 +70,8 @@ print:
 	int $0x10		/* call BIOS to show this char */
 	jmp 0b
 0:
+	popw %bx
+	popw %si
 	ret
 
 .section .data.loader

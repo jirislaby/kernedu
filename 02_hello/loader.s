@@ -16,18 +16,23 @@ startup:
 	movw %ax, %ss
 	xorl %esp, %esp
 
-	movw $hello, %si
-	callw print
+	pushw $hello_text
+	calll print
+	addl $2, %esp
 
-	std				/* change the direction flag */
-	movw $hello_end - 1, %si	/* point to the 'd' from the 'world' */
-	callw print
+	std			/* change the direction flag */
+	pushw $(hello_end - 1)	/* point to the 'd' from the 'world' */
+	calll print
+	addl $2, %esp
 
 loop:
 	hlt
 	jmp loop
 
 print:
+	pushw %si
+	pushw %bx
+	movw 8(%esp), %si
 	movb $0x0e, %ah
 	movw $0x0007, %bx
 0:
@@ -37,11 +42,13 @@ print:
 	int $0x10		/* call BIOS to show this char */
 	jmp 0b
 0:
+	popw %bx
+	popw %si
 	ret
 
 .section .data.loader
 	.byte 0 /* for reverse */
-hello:
-	.ascii "Hello world"
+hello_text:
+	.ascii "Hello world from assembly"
 hello_end:
-	.byte 0 /* for forward */
+	.asciz "\n\r"
