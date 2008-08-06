@@ -4,7 +4,7 @@
  * don't move with the code and data) -- logical address 0 is physcal adddres
  * 0x7c00, so we need to subtract this base to get physical address of x.
  */
-#define pa(x)		((x) - 0x7c00)
+#define va(x)		((x) - 0x7c00)
 
 /* we need to save space, so the noinline */
 static __attribute__((noinline)) void print(const char *text)
@@ -18,7 +18,7 @@ static __attribute__((noinline)) void print(const char *text)
 	 *
 	 * See e.g. http://en.wikipedia.org/wiki/VGA for the VGA addressing.
 	 */
-	unsigned short *vram = (void *)pa(0xb8000);
+	unsigned short *vram = (void *)va(0xb8000);
 
 	while (*text) {
 		if (*text == '\n') {

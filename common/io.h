@@ -1,7 +1,8 @@
 #ifndef __IO_H_FILE
 #define __IO_H_FILE
 
-#define pa(x)		((x) - 0x7c00)
+#define pa(x)		(((unsigned long)x) + 0x7c00)
+#define va(x)		((void *)((x) - 0x7c00))
 
 #define barrier()	__asm__ __volatile__("": : :"memory")
 

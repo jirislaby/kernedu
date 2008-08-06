@@ -1,13 +1,6 @@
 .section .text
 .code16
 
-.globl halt
-halt:
-cli
-1:
-hlt
-jmp 1b
-
 /*
   this generates:
   push 0

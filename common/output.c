@@ -2,7 +2,7 @@
 #include <output.h>
 
 static unsigned char scr_x, scr_y;
-static unsigned short *vram = (void *)pa(0xb8000);
+static unsigned short *vram = va(0xb8000);
 
 static inline void print_char(unsigned short ch, unsigned char x,
 		unsigned char y)

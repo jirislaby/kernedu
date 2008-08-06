@@ -1,4 +1,5 @@
-SUBDIRS=common/ 01_lds/ 02_hello/ 03_c/ 04_protected/ 05_loading/ #timer/
+SUBDIRS=common/ 01_lds/ 02_hello/ 03_c/ 04_protected/ 05_loading/ \
+	06_interrupt/
 MAKEFLAGS += -rR --no-print-directory
 
 all: $(addsuffix .built,$(SUBDIRS))
