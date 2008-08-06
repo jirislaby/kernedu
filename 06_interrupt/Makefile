@@ -1,6 +1,6 @@
 TOPDIR=..
 TARGET=os os.bin
-LOBJS=os.o loader.o irq.o
+LOBJS=os.o loader.o irq.o entry.o
 OBJS=$(LOBJS) $(COMMON_OBJS)
 CLEAN_FILES += $(LOBJS) $(TARGET)
 USE_COMMON_LIB=1

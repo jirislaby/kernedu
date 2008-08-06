@@ -14,9 +14,11 @@ struct idt {
 	unsigned long base;
 } __attribute__((packed)) idt = { 20*8 - 1, pa(idesc) };
 
-static void do_div_by_zero(void)
+extern void div_by_zero(void);
+void do_div_by_zero(struct pt_regs *pt)
 {
-	print("DIVISION BY ZERO");
+	print("DIVISION BY ZERO at\n");
+	print_num(pt->ip);
 	halt();
 }
 
@@ -32,7 +34,7 @@ static void do_inval_opcode(void)
 	halt();
 }
 
-static void do_gp(void)
+static void do_general_protection(void)
 {
 	print("GP");
 	halt();
@@ -50,18 +52,14 @@ static inline void set_intr(unsigned int n, void (*fn)(void))
 
 static void setup_handlers(void)
 {
-	set_intr(0, do_div_by_zero);
+	set_intr(0, div_by_zero);
 	set_intr(3, do_breakpoint);
 	set_intr(6, do_inval_opcode);
-	set_intr(13, do_gp);
+	set_intr(13, do_general_protection);
 }
-
-unsigned int b;
 
 void init_irq(void)
 {
-	volatile char *a = (void *)0;
 	setup_handlers();
 	asm volatile("lidt %0" : : "m" (idt));
-	*a = 5;
 }

@@ -13,9 +13,9 @@ void main(void)
 
 	init_irq();
 
-#if 0
+#if 1
 	divisor /= zero;
-#elsif 0
+#elif 0
 	asm volatile("ud2");
 #else
 	asm volatile("int $3");
