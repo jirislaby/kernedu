@@ -14,29 +14,80 @@ struct idt {
 	unsigned long base;
 } __attribute__((packed)) idt = { 20*8 - 1, pa(idesc) };
 
+static void show_regs(struct pt_regs *pt)
+{
+	print_color("EIP=", 0x0c);
+	print_num_color(pt->ip, 0x0c);
+	print_color("\n", 0x0c);
+}
+
 extern void div_by_zero(void);
 void do_div_by_zero(struct pt_regs *pt)
 {
-	print("DIVISION BY ZERO at\n");
-	print_num(pt->ip);
+	print_color("DIVISION BY ZERO: ", 0x0c);
+	show_regs(pt);
 	halt();
 }
 
-static void do_breakpoint(void)
+extern void nmi(void);
+void do_nmi(struct pt_regs *pt)
 {
-	print("BP");
+	print_color("NMI: ", 0x0c);
+	show_regs(pt);
+}
+
+extern void overflow(void);
+void do_overflow(struct pt_regs *pt)
+{
+	print_color("OVERFLOW: ", 0x0c);
+	show_regs(pt);
+}
+
+extern void bound_exceeded(void);
+void do_bound_exceeded(struct pt_regs *pt)
+{
+	print_color("BOUND EXCEEDED: ", 0x0c);
+	show_regs(pt);
 	halt();
 }
 
-static void do_inval_opcode(void)
+extern void breakpoint(void);
+void do_breakpoint(struct pt_regs *pt)
 {
-	print("INVAL OPCODE");
+	print_color("BREAKPOINT: ", 0x0c);
+	show_regs(pt);
+}
+
+extern void inval_opcode(void);
+void do_inval_opcode(struct pt_regs *pt)
+{
+	print_color("INVAL OPCODE: ", 0x0c);
+	show_regs(pt);
 	halt();
 }
 
-static void do_general_protection(void)
+extern void double_fault(void);
+void do_double_fault(struct pt_regs *pt)
 {
-	print("GP");
+	print_color("DOUBLE FAULT\n", 0x0c);
+	halt();
+}
+
+extern void segment_np(void);
+void do_segment_np(struct pt_regs *pt)
+{
+	print_color("SEGMENT NOT PRESENT: error=", 0x0c);
+	print_num_color(pt->number, 0x0c);
+	show_regs(pt);
+	halt();
+}
+
+extern void general_protection(void);
+void do_general_protection(struct pt_regs *pt)
+{
+	print_color("GENERAL PROTECTION: error=", 0x0c);
+	print_num_color(pt->number, 0x0c);
+	show_regs(pt);
 	halt();
 }
 
@@ -53,9 +104,14 @@ static inline void set_intr(unsigned int n, void (*fn)(void))
 static void setup_handlers(void)
 {
 	set_intr(0, div_by_zero);
-	set_intr(3, do_breakpoint);
-	set_intr(6, do_inval_opcode);
-	set_intr(13, do_general_protection);
+	set_intr(2, nmi);
+	set_intr(3, breakpoint);
+	set_intr(4, overflow);
+	set_intr(5, bound_exceeded);
+	set_intr(6, inval_opcode);
+	set_intr(8, double_fault);
+	set_intr(11, segment_np);
+	set_intr(13, general_protection);
 }
 
 void init_irq(void)
