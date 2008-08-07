@@ -34,7 +34,7 @@ static void roll_display(void)
 		}
 }
 
-void print(const char *text)
+void print_color(const char *text, unsigned char color)
 {
 	while (*text) {
 		if (*text == '\r' || *text == '\n')
@@ -43,7 +43,7 @@ void print(const char *text)
 			roll_display();
 			scr_y--;
 		}
-		print_char(0x0700 | *text, scr_x, scr_y);
+		print_char((color << 8) | *text, scr_x, scr_y);
 		if (++scr_x >= 80) {
 line_feed:
 			scr_y++;
@@ -53,7 +53,7 @@ line_feed:
 	}
 }
 
-void print_num(unsigned long num)
+void print_num_color(unsigned long num, unsigned char color)
 {
 	static const char HEX[] = "0123456789abcdef";
 	unsigned int a;
@@ -63,5 +63,5 @@ void print_num(unsigned long num)
 		text[a] = HEX[(num >> (4*(7-a))) & 0xf];
 	text[8] = ' ';
 	text[9] = 0;
-	print(text);
+	print_color(text, color);
 }
