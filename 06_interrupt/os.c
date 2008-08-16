@@ -1,8 +1,7 @@
 #include <io.h>
+#include <irq.h>
 #include <output.h>
 #include <setup.h>
-
-#include "irq.h"
 
 unsigned int divisor, zero, overflow_value;
 

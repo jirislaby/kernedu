@@ -1,18 +1,17 @@
 #include <io.h>
+#include <irq.h>
 #include <output.h>
 #include <setup.h>
-
-#include "irq.h"
 
 struct idt_desc {
 	unsigned int a;
 	unsigned int b;
-} __attribute__((packed)) idesc[20] __attribute__((aligned(8))) = { };
+} __attribute__((packed)) idesc[256] __attribute__((aligned(8))) = { };
 
 struct idt {
 	unsigned short limit;
 	unsigned long base;
-} __attribute__((packed)) idt = { 20*8 - 1, pa(idesc) };
+} __attribute__((packed)) idt = { 256*8 - 1, pa(idesc) };
 
 static void show_regs(struct pt_regs *pt)
 {
@@ -82,11 +81,52 @@ void do_segment_np(struct pt_regs *pt)
 	halt();
 }
 
+extern void ss_fault(void);
+void do_ss_fault(struct pt_regs *pt)
+{
+	print_color("STACK SEGMENT FAULT: error=", 0x0c);
+	print_num_color(pt->number, 0x0c);
+	show_regs(pt);
+	halt();
+}
+
 extern void general_protection(void);
 void do_general_protection(struct pt_regs *pt)
 {
 	print_color("GENERAL PROTECTION: error=", 0x0c);
 	print_num_color(pt->number, 0x0c);
+	show_regs(pt);
+	halt();
+}
+
+extern void page_fault(void);
+void do_page_fault(struct pt_regs *pt)
+{
+	unsigned long cr2;
+
+	asm volatile("movl %%cr2, %0" : "=r" (cr2));
+
+	print_color("PAGE FAULT: error=", 0x0c);
+	print_num_color(pt->number, 0x0c);
+	print_color("CR2=", 0x0c);
+	print_num_color(cr2, 0x0c);
+	show_regs(pt);
+	halt();
+}
+
+extern void alignment_check(void);
+void do_alignment_check(struct pt_regs *pt)
+{
+	print_color("ALIGNMENT CHECK: error=", 0x0c);
+	print_num_color(pt->number, 0x0c);
+	show_regs(pt);
+	halt();
+}
+
+extern void machine_check(void);
+void do_machine_check(struct pt_regs *pt)
+{
+	print_color("MACHINE CHECK: ", 0x0c);
 	show_regs(pt);
 	halt();
 }
@@ -111,7 +151,11 @@ static void setup_handlers(void)
 	set_intr(6, inval_opcode);
 	set_intr(8, double_fault);
 	set_intr(11, segment_np);
+	set_intr(12, ss_fault);
 	set_intr(13, general_protection);
+	set_intr(14, page_fault);
+	set_intr(17, alignment_check);
+	set_intr(18, machine_check);
 }
 
 void init_irq(void)

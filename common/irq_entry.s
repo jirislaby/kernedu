@@ -18,7 +18,11 @@
 	FAULT_HANDLER inval_opcode, 1		/* 6 */
 	FAULT_HANDLER double_fault, 0		/* 8 */
 	FAULT_HANDLER segment_np, 0		/* 11 */
+	FAULT_HANDLER ss_fault, 0		/* 12 */
 	FAULT_HANDLER general_protection, 0	/* 13 */
+	FAULT_HANDLER page_fault, 0		/* 14 */
+	FAULT_HANDLER alignment_check, 0	/* 17 */
+	FAULT_HANDLER machine_check, 1		/* 18 */
 
 irq_handler:
 	pushal

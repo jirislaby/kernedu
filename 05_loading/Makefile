@@ -3,7 +3,6 @@ TARGET=os os.bin
 LOBJS=os.o loader.o
 OBJS=$(LOBJS) $(COMMON_OBJS)
 CLEAN_FILES += $(LOBJS) $(TARGET)
-USE_COMMON_LIB=1
 
 include $(TOPDIR)/Makefile.rules
 
