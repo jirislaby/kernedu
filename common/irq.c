@@ -13,6 +13,12 @@ struct idt {
 	unsigned long base;
 } __attribute__((packed)) idt = { 256*8 - 1, pa(idesc) };
 
+static void default_handler(unsigned int irq);
+
+static void (*irq_handlers[256-0x20])(unsigned int) = {
+	[ 0 ... 256-0x20-1 ] = default_handler
+};
+
 static void show_regs(struct pt_regs *pt)
 {
 	print_color("EIP=", 0x0c);
@@ -131,6 +137,26 @@ void do_machine_check(struct pt_regs *pt)
 	halt();
 }
 
+extern void default_fault_handler(void);
+void do_default_fault_handler(struct pt_regs *pt)
+{
+	print_color("UNHANDLED FAULT: ", 0x0c);
+	show_regs(pt);
+	halt();
+}
+
+void do_irq(struct pt_regs *pt)
+{
+	irq_handlers[pt->number](pt->number);
+}
+
+static void default_handler(unsigned int irq)
+{
+	print_color("UNHANDLED INTERRUPT: ", 0x0c);
+	print_num_color(irq, 0x0c);
+	halt();
+}
+
 static inline void set_intr(unsigned int n, void (*fn)(void))
 {
 	unsigned long f = (unsigned long)fn;
@@ -143,6 +169,12 @@ static inline void set_intr(unsigned int n, void (*fn)(void))
 
 static void setup_handlers(void)
 {
+	extern unsigned long vectors[];
+	unsigned int a;
+
+	for (a = 0; a < 0x20; a++)
+		set_intr(a, default_fault_handler);
+
 	set_intr(0, div_by_zero);
 	set_intr(2, nmi);
 	set_intr(3, breakpoint);
@@ -156,6 +188,16 @@ static void setup_handlers(void)
 	set_intr(14, page_fault);
 	set_intr(17, alignment_check);
 	set_intr(18, machine_check);
+
+	/*
+	 * see irq_entry.s for vectors[] generation
+	 * it's an array of pointers to
+	 * push irq_number
+	 * jmp irq_handler
+	 * for each irq 0x20..0xff
+	 */
+	for (a = 0x20; a < 256; a++)
+		set_intr(a, (void (*)(void))vectors[a - 0x20]);
 }
 
 void init_irq(void)

@@ -10,6 +10,7 @@
 	jmp irq_handler
 .endm
 
+	FAULT_HANDLER default_fault_handler, 1
 	FAULT_HANDLER div_by_zero, 1		/* 0 */
 	FAULT_HANDLER nmi, 1			/* 2 */
 	FAULT_HANDLER breakpoint, 1		/* 3 */
@@ -23,6 +24,42 @@
 	FAULT_HANDLER page_fault, 0		/* 14 */
 	FAULT_HANDLER alignment_check, 0	/* 17 */
 	FAULT_HANDLER machine_check, 1		/* 18 */
+
+/*
+  this generates:
+  push 0
+  push do_irq
+  jmp irq_handler
+  push 1
+  push do_irq
+  jmp irq_handler
+  . . .
+  into the code as vectors_code (unused, just naming) and
+  pointer to "push 0"
+  pointer to "push 1"
+  . . .
+  to .rodata section as a vectors array (copied to idt)
+*/
+.section .rodata	/* vectors are in .rodata */
+.align 4
+.globl vectors
+vectors:
+
+.text			/* instructions in .text */
+irq=0x20		/* start at 32 */
+vectors_code:
+.rept 256-0x20		/* repeat this 224 times */
+ .align 4, 0x90		/* align with nops (0x90), just in case */
+1:	pushl $irq	/* number */
+	pushl $do_irq	/* handler (still the same) */
+	jmp irq_handler
+ .previous		/* back to .rodata */
+	.long 1b	/* store the pointer */
+ .text			/* and switch back to .text */
+ irq=irq+1
+.endr
+.previous	/* to .rodata */
+.previous
 
 irq_handler:
 	pushal
