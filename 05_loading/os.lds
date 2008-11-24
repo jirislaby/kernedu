@@ -36,6 +36,7 @@ SECTIONS
 		__bss_end = .;
 	}
 	.rodata.os_end_magic : {
+		. = ALIGN(512) + 508;
 		__os_end_magic = .;
 		LONG(0xdedaedaf);
 	}
