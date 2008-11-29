@@ -16,7 +16,7 @@ struct idt {
 static void default_handler(unsigned int irq);
 
 static void (*irq_handlers[256-0x20])(unsigned int) = {
-	[ 0 ... 256-0x20-1 ] = default_handler
+	[ 0 ... 255-0x20 ] = default_handler
 };
 
 static void show_regs(struct pt_regs *pt)
@@ -169,7 +169,9 @@ static inline void set_intr(unsigned int n, void (*fn)(void))
 
 static void setup_handlers(void)
 {
-	extern unsigned long vectors[];
+	extern const struct handler __handlers[];
+	extern const unsigned long vectors[];
+	const struct handler *h;
 	unsigned int a;
 
 	for (a = 0; a < 0x20; a++)
@@ -198,6 +200,9 @@ static void setup_handlers(void)
 	 */
 	for (a = 0x20; a < 256; a++)
 		set_intr(a, (void (*)(void))vectors[a - 0x20]);
+
+	for (h = __handlers; h->handler; h++)
+		irq_handlers[h->irq] = h->handler;
 }
 
 void init_irq(void)

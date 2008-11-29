@@ -1,58 +1,14 @@
-#include <code16.h>
-
 #include <io.h>
+#include <irq.h>
 #include <output.h>
-
-#include "timer.h"
-
-static void handler(int irq)
-{
-	print_num(irq);
-	print("HANDLER\n");
-	halt();
-}
-IRQ_HANDLER(handler, 0); /* div by zero */
-IRQ_HANDLER(handler, 3); /* breakpoint */
-IRQ_HANDLER(handler, 6); /* invalid opcode */
 
 static void pic_set(unsigned int irq, unsigned char state);
 
-static void cause_irq(int irq)
-{
-	switch (irq) {
-	case 0: {
-		unsigned char a = 1, b = 0;
-		a /= b;
-		asm volatile("" : : "g" (a)); /* mark it used */
-		break;
-	}
-	case 3:
-		asm volatile("int3");
-		break;
-	case 6:
-		asm volatile("ud2");
-		break;
-/*	case 14:
-		asm volatile("pushw %%es\npushw %%ax\npushw %%di\n"
-			"movw 0x1234, %%ax\n"
-			"movw %%ax, %%es\n"
-			"xorw %%di, %%di\n"
-			"stosw\n"
-			"popw %%di\npopw %%ax\npopw %%es" : :);
-		break;*/
-	default:
-		asm volatile("int %0" : : "N" (irq));
-		break;
-	}
-}
-static void timer(int irq)
+static void timer(unsigned int irq)
 {
 	static unsigned int a;
 
 	a++;
-
-	if (a == 20)
-		cause_irq(6);
 
 	print_num(a);
 	print("TIMER\n");
@@ -111,13 +67,11 @@ static void timer_enable(unsigned short intval)
 
 void main(void)
 {
-	extern char _text[];
-
 	clear_screen();
 
-	print("Running from 0x");
-	print_num((unsigned long)_text);
-	print("\n");
+	print_color("Timer example\n", 0x09);
+
+	init_irq();
 
 	init_pic();
 	sti();
@@ -125,5 +79,5 @@ void main(void)
 	pic_set(0, 1);
 
 	while (1)
-		asm volatile("hlt");
+		hlt();
 }
