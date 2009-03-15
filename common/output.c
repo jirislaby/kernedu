@@ -2,7 +2,13 @@
 #include <output.h>
 
 static unsigned char scr_x, scr_y;
-static unsigned short *vram = va(0xb8000);
+static volatile unsigned short *vram = va(0xb8000);
+
+static inline void flush_vram(void)
+{
+	/* qemu-kvm is buggy? */
+	(void)*vram;
+}
 
 static inline void print_char(unsigned short ch, unsigned char x,
 		unsigned char y)
@@ -19,6 +25,7 @@ void clear_screen(void)
 
 	scr_x = 0;
 	scr_y = 0;
+	flush_vram();
 }
 
 /* causes to move lines one line upper and clean the bottom line */
@@ -51,6 +58,7 @@ line_feed:
 		}
 		text++;
 	}
+	flush_vram();
 }
 
 void print_num_color(unsigned long num, unsigned char color)
