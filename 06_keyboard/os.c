@@ -62,7 +62,7 @@ void main(void)
 
 	clear_screen();
 
-	print_color("Keyboard example\n", 0x09);
+	print_color("Keyboard example (polling)\n", 0x09);
 
 	init_8042();
 
