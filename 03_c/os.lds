@@ -26,4 +26,8 @@ SECTIONS
 	.rodata.loader_magic : {
 		SHORT(0xaa55);
 	}
+
+	/DISCARD/ : {
+		*(.eh_frame)
+	}
 }

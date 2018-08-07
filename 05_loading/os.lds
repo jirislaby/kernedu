@@ -46,4 +46,8 @@ SECTIONS
 		LONG(0xdedaedaf);
 	}
 	__os_end = .;
+
+	/DISCARD/ : {
+		*(.eh_frame)
+	}
 }
