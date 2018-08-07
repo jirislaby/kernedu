@@ -81,7 +81,7 @@ void main(void)
 		print("\n");
 		if (!(b & 1)) {		/* no data -> wait a bit */
 			unsigned int a;
-			for (a = 0; a < 0xfffffff; a++)
+			for (a = 0; a < 0x1ffffff; a++)
 				asm volatile("rep; nop\n");
 		}
 	}
