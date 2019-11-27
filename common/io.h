@@ -17,6 +17,17 @@ static inline unsigned char inb(unsigned short p)
 	return val;
 }
 
+static inline void outl(unsigned int val, unsigned short p)
+{
+	asm volatile("outl %0,%1" : : "a" (val), "dN" (p));
+}
+static inline unsigned int inl(unsigned short p)
+{
+	unsigned int val;
+	asm volatile("inl %1,%0" : "=a" (val) : "dN" (p));
+	return val;
+}
+
 static inline void sti(void)
 {
 	asm volatile("sti" : : : "memory");
