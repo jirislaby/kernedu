@@ -3,20 +3,22 @@
 #include <output.h>
 #include <setup.h>
 
+#define IDESCS		256
+
 struct idt_desc {
 	unsigned int a;
 	unsigned int b;
-} __attribute__((packed)) idesc[256] __attribute__((aligned(8))) = { };
+} __attribute__((packed)) idesc[IDESCS] __attribute__((aligned(8))) = { };
 
 struct idt {
 	unsigned short limit;
 	unsigned long base;
-} __attribute__((packed)) idt = { 256*8 - 1, pa(idesc) };
+} __attribute__((packed)) idt = { sizeof(idesc) - 1, pa(idesc) };
 
 static void default_handler(unsigned int irq);
 
-static void (*irq_handlers[256-0x20])(unsigned int) = {
-	[ 0 ... 255-0x20 ] = default_handler
+static void (*irq_handlers[IDESCS - 0x20])(unsigned int) = {
+	[ 0 ... IDESCS - 1 - 0x20 ] = default_handler
 };
 
 static void show_regs(struct pt_regs *pt)
@@ -198,7 +200,7 @@ static void setup_handlers(void)
 	 * jmp irq_handler
 	 * for each irq 0x20..0xff
 	 */
-	for (a = 0x20; a < 256; a++)
+	for (a = 0x20; a < IDESCS; a++)
 		set_intr(a, (void (*)(void))vectors[a - 0x20]);
 
 	for (h = __handlers; h->handler; h++)
