@@ -19,16 +19,18 @@ IRQ_HANDLER(timer, 32);
 static void init_pic(void)
 {
 	/* ICW1 */
-	outb(0x11, 0x20); /* master */
-	outb(0x11, 0xa0); /* slave */
+#define ICW1		(1 << 4)
+#define ICW1_DO_ICW4	(1 << 0)
+	outb(ICW1 | ICW1_DO_ICW4, 0x20); /* master */
+	outb(ICW1 | ICW1_DO_ICW4, 0xa0); /* slave */
 	/* ICW2 */
-	outb(0x20, 0x21);
-	outb(0x28, 0xa1);
+	outb(0x20, 0x21); /* master IRQ base */
+	outb(0x28, 0xa1); /* slave IRQ base */
 	/* ICW3 */
-	outb(0x04, 0x21);
-	outb(0x02, 0xa1);
+	outb(1 << 2, 0x21); /* slave is on IRQ2 */
+	outb(0x02, 0xa1);  /* slave ID */
 	/* ICW4 */
-	outb(0x01, 0x21);
+	outb(0x01, 0x21); /* "intel" mode */
 	outb(0x01, 0xa1);
 	/* disable ints */
 	outb(0xfb, 0x21); /* except cascade */
