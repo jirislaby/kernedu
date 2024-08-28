@@ -4,7 +4,7 @@
 
 static void pic_set(unsigned int irq, unsigned char state);
 
-static void timer(unsigned int irq)
+static void timer(unsigned int)
 {
 	static unsigned int a;
 

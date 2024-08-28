@@ -74,7 +74,7 @@ void do_inval_opcode(struct pt_regs *pt)
 }
 
 extern void double_fault(void);
-void do_double_fault(struct pt_regs *pt)
+void do_double_fault(struct pt_regs *)
 {
 	print_color("DOUBLE FAULT\n", 0x0c);
 	halt();

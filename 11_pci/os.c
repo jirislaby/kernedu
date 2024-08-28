@@ -34,7 +34,7 @@ void main(void)
 			outl(PCI_CONFIG_A_ENABLE | id, PCI_CONFIG_ADDRESS);
 
 			reg = inl(PCI_CONFIG_DATA);
-			if (reg == ~0)
+			if (reg == ~0U)
 				continue;
 
 			pci_print_id(id);

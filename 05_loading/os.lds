@@ -12,11 +12,11 @@ SECTIONS
 {
 	. = 0;
 	.text.loader : {
-		loader.o(.text.loader)
+		*loader*.o(.text.loader)
 	} :text
 	. = 0x150;
 	.data.loader : {
-		loader.o(.data.loader)
+		*loader*.o(.data.loader)
 	} :data
 	. = 0x1fe;
 	.rodata.loader_magic : {
