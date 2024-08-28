@@ -1,10 +1,11 @@
 CC=gcc
 CFLAGS_COMMON=-Wall -g -I. -I$(TOPDIR)/common -MMD -MF .$@.d
-CFLAGS=$(CFLAGS_COMMON) -m32 -Os -ffreestanding -nostdinc
+CFLAGS=$(CFLAGS_COMMON) -m32 -Os -ffreestanding -nostdinc -fmessage-length=0 -mno-red-zone -fno-stack-protector
 CFLAGS_HOST=$(CFLAGS_COMMON) -O2
 AS=as
 ASFLAGS=-g --32
 LD=ld
+LDFLAGS=-z noexecstack
 AR=ar
 OBJCOPY=objcopy
 DEPS=$(wildcard .*.d)
