@@ -159,14 +159,18 @@ static void default_handler(unsigned int irq)
 	halt();
 }
 
-static inline void set_intr(unsigned int n, void (*fn)(void))
+static inline void set_intr(_Bool trap, unsigned int n, void (*fn)(void))
 {
+#define IDT_PRESENT		(1 << 15)
+#define IDT_32BIT		(1 << 11)
+#define IDT_INTERRUPT_GATE	0x0600
+#define IDT_TRAP_GATE		0x0700
 	unsigned long f = (unsigned long)fn;
+	unsigned int gate = trap ? IDT_TRAP_GATE : IDT_INTERRUPT_GATE;
 
 	/* code segment is 0x0008 */
-	idesc[n].a = 0x00080000		| (f & 0xffff);
-	/* 0x8000 - enable bit, 0x0e00 - interrupt descriptor type */
-	idesc[n].b = (f & 0xffff0000)	| 0x8e00;
+	idesc[n].a = (0x0008 << 16) | (f & 0xffff);
+	idesc[n].b = (f & 0xffff0000) | IDT_PRESENT | IDT_32BIT | gate;
 }
 
 static void setup_handlers(void)
@@ -177,21 +181,21 @@ static void setup_handlers(void)
 	unsigned int a;
 
 	for (a = 0; a < 0x20; a++)
-		set_intr(a, default_fault_handler);
+		set_intr(1, a, default_fault_handler);
 
-	set_intr(0, div_by_zero);
-	set_intr(2, nmi);
-	set_intr(3, breakpoint);
-	set_intr(4, overflow);
-	set_intr(5, bound_exceeded);
-	set_intr(6, inval_opcode);
-	set_intr(8, double_fault);
-	set_intr(11, segment_np);
-	set_intr(12, ss_fault);
-	set_intr(13, general_protection);
-	set_intr(14, page_fault);
-	set_intr(17, alignment_check);
-	set_intr(18, machine_check);
+	set_intr(1, 0, div_by_zero);
+	set_intr(1, 2, nmi);
+	set_intr(1, 3, breakpoint);
+	set_intr(1, 4, overflow);
+	set_intr(1, 5, bound_exceeded);
+	set_intr(1, 6, inval_opcode);
+	set_intr(1, 8, double_fault);
+	set_intr(1, 11, segment_np);
+	set_intr(1, 12, ss_fault);
+	set_intr(1, 13, general_protection);
+	set_intr(1, 14, page_fault);
+	set_intr(1, 17, alignment_check);
+	set_intr(1, 18, machine_check);
 
 	/*
 	 * see irq_entry.s for vectors[] generation
@@ -201,7 +205,7 @@ static void setup_handlers(void)
 	 * for each irq 0x20..0xff
 	 */
 	for (a = 0x20; a < IDESCS; a++)
-		set_intr(a, (void (*)(void))vectors[a - 0x20]);
+		set_intr(0, a, (void (*)(void))vectors[a - 0x20]);
 
 	for (h = __handlers; h->handler; h++)
 		irq_handlers[h->irq] = h->handler;
