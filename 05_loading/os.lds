@@ -22,7 +22,7 @@ SECTIONS
 	}
 	.text : {
 		_text = .;
-		*(.text)
+		*(.text*)
 	}
 	.data : {
 		*(.data)
