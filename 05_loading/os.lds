@@ -27,13 +27,13 @@ SECTIONS
 	.data : {
 		*(.data)
 	}
+	.data.handlers : {
+		__handlers = .;
+		*(.data.handlers)
+		LONG(0);
+	}
 	.rodata : {
 		*(.rodata)
-	}
-	.rodata.handlers : {
-		__handlers = .;
-		*(.rodata.handlers)
-		LONG(0);
 	}
 	.bss : {
 		__bss_start = .;

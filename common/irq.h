@@ -31,7 +31,7 @@ struct handler {
 
 #define IRQ_HANDLER(func, irqn) \
 	static const struct handler __irq_handler_ ## func ## irqn \
-		__attribute__((section(".rodata.handlers"), used)) = { \
+		__attribute__((section(".data.handlers"), used)) = { \
 		.handler = func, \
 		.irq = irqn, \
 	}
