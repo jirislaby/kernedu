@@ -1,6 +1,8 @@
 #ifndef __IO_H_FILE
 #define __IO_H_FILE
 
+#include "types.h"
+
 #define pa(x)		(((unsigned long)x) + 0x7c00)
 #define va(x)		((void *)((x) - 0x7c00))
 
@@ -41,6 +43,22 @@ static inline void cli(void)
 static inline void hlt(void)
 {
 	asm volatile("hlt" : : : "memory");
+}
+
+static inline u64 rdmsr(u32 msr)
+{
+	u32 eax, edx;
+
+	asm volatile("rdmsr" : "=a" (eax), "=d" (edx) : "c" (msr));
+
+	return (u64)edx << 32 | eax;
+}
+
+static inline void wrmsr(u32 msr, u64 val)
+{
+	u32 eax = val, edx = val >> 32;
+
+	asm volatile("wrmsr" : : "a" (eax), "c" (msr), "d" (edx));
 }
 
 #endif
