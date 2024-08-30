@@ -3,7 +3,7 @@ os = executable('os', [
   'os.c',
   ],
   link_depends: linker_script_file,
-  dependencies: [ common_lib_dep, linker_script ],
+  dependencies: [ build_os_dep, common_lib_dep, linker_script ],
   )
 
 custom_target(

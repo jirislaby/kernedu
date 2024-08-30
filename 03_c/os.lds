@@ -1,26 +1,33 @@
 OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
 OUTPUT_ARCH(i386)
 ENTRY(startup)
+
+PHDRS
+{
+	text PT_LOAD FLAGS(5);
+	data PT_LOAD FLAGS(6);
+}
+
 SECTIONS
 {
 	. = 0;
 	.text.loader : {
-		loader.o(.text.loader)
-	}
+		*loader*.o(.text.loader)
+	} :text
 	. = 0xa0;
 	.data.loader : {
-		loader.o(.data.loader)
-	}
+		*loader*.o(.data.loader)
+	} :data
 	. = 0x100;
 	.text : {
-		os.o(.text)
-	}
+		*os*.o(.text)
+	} :text
 	. = 0x1a0;
 	.data : {
-		os.o(.data)
-	}
+		*os*.o(.data)
+	} :data
 	.rodata : {
-		os.o(.rodata)
+		*os*.o(.rodata)
 	}
 	. = 0x1fe;
 	.rodata.loader_magic : {
@@ -29,5 +36,6 @@ SECTIONS
 
 	/DISCARD/ : {
 		*(.eh_frame)
+		*(.note.*)
 	}
 }

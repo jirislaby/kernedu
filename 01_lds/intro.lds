@@ -17,3 +17,4 @@ SECTIONS
 		BYTE(0) /* string terminator */
 	}
 }
+INSERT AFTER .rodata;
