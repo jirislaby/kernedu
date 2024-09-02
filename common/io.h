@@ -45,6 +45,20 @@ static inline void hlt(void)
 	asm volatile("hlt" : : : "memory");
 }
 
+static inline unsigned long get_cr2()
+{
+	unsigned long cr2;
+	asm volatile("mov %%cr2,%0\n\t" : "=r" (cr2));
+	return cr2;
+}
+
+static inline unsigned long get_sp()
+{
+	unsigned long sp;
+        asm volatile("mov %%esp,%0\n\t" : "=r" (sp));
+	return sp;
+}
+
 static inline u64 rdmsr(u32 msr)
 {
 	u32 eax, edx;

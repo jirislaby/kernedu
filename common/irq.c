@@ -21,18 +21,44 @@ static void (*irq_handlers[IDESCS - 0x20])(unsigned int) = {
 	[ 0 ... IDESCS - 1 - 0x20 ] = default_handler
 };
 
-static void show_regs(struct pt_regs *pt)
+enum {
+	SHOW_ERROR = BIT(1),
+	SHOW_NOSTACK = BIT(2),
+};
+
+static void show_regs(struct pt_regs *pt, unsigned int show)
 {
+	unsigned long sp = get_sp();
+
 	print_color("EIP=", 0x0c);
 	print_num_color(pt->ip, 0x0c);
+	print_color("CR2=", 0x0c);
+	print_num_color(get_cr2(), 0x0c);
+	print_color("SP=", 0x0c);
+	print_num_color(sp, 0x0c);
+	if (show & SHOW_ERROR) {
+		print_color("error=", 0x0c);
+		print_num_color(pt->number, 0x0c);
+	}
 	print_color("\n", 0x0c);
+
+	if (show & SHOW_NOSTACK)
+		return;
+
+	unsigned int *ptr = (unsigned int *)sp;
+	for (unsigned a = 0; a < 32; a++) {
+		if (a && !(a % 4))
+			print("\n");
+		print_num((unsigned long)&ptr[a]);
+		print_num(ptr[a]);
+	}
 }
 
 extern void div_by_zero(void);
 void do_div_by_zero(struct pt_regs *pt)
 {
 	print_color("DIVISION BY ZERO: ", 0x0c);
-	show_regs(pt);
+	show_regs(pt, 0);
 	halt();
 }
 
@@ -40,21 +66,21 @@ extern void nmi(void);
 void do_nmi(struct pt_regs *pt)
 {
 	print_color("NMI: ", 0x0c);
-	show_regs(pt);
+	show_regs(pt, 0);
 }
 
 extern void overflow(void);
 void do_overflow(struct pt_regs *pt)
 {
 	print_color("OVERFLOW: ", 0x0c);
-	show_regs(pt);
+	show_regs(pt, SHOW_NOSTACK);
 }
 
 extern void bound_exceeded(void);
 void do_bound_exceeded(struct pt_regs *pt)
 {
 	print_color("BOUND EXCEEDED: ", 0x0c);
-	show_regs(pt);
+	show_regs(pt, 0);
 	halt();
 }
 
@@ -62,72 +88,62 @@ extern void breakpoint(void);
 void do_breakpoint(struct pt_regs *pt)
 {
 	print_color("BREAKPOINT: ", 0x0c);
-	show_regs(pt);
+	show_regs(pt, SHOW_NOSTACK);
 }
 
 extern void inval_opcode(void);
 void do_inval_opcode(struct pt_regs *pt)
 {
 	print_color("INVAL OPCODE: ", 0x0c);
-	show_regs(pt);
+	show_regs(pt, 0);
 	halt();
 }
 
 extern void double_fault(void);
-void do_double_fault(struct pt_regs *)
+void do_double_fault(struct pt_regs *pt)
 {
-	print_color("DOUBLE FAULT\n", 0x0c);
+	print_color("DOUBLE FAULT: ", 0x0c);
+	show_regs(pt, 0);
 	halt();
 }
 
 extern void segment_np(void);
 void do_segment_np(struct pt_regs *pt)
 {
-	print_color("SEGMENT NOT PRESENT: error=", 0x0c);
-	print_num_color(pt->number, 0x0c);
-	show_regs(pt);
+	print_color("SEGMENT NOT PRESENT: ", 0x0c);
+	show_regs(pt, SHOW_ERROR);
 	halt();
 }
 
 extern void ss_fault(void);
 void do_ss_fault(struct pt_regs *pt)
 {
-	print_color("STACK SEGMENT FAULT: error=", 0x0c);
-	print_num_color(pt->number, 0x0c);
-	show_regs(pt);
+	print_color("STACK SEGMENT FAULT: ", 0x0c);
+	show_regs(pt, SHOW_ERROR);
 	halt();
 }
 
 extern void general_protection(void);
 void do_general_protection(struct pt_regs *pt)
 {
-	print_color("GENERAL PROTECTION: error=", 0x0c);
-	print_num_color(pt->number, 0x0c);
-	show_regs(pt);
+	print_color("GENERAL PROTECTION: ", 0x0c);
+	show_regs(pt, SHOW_ERROR);
 	halt();
 }
 
 extern void page_fault(void);
 void do_page_fault(struct pt_regs *pt)
 {
-	unsigned long cr2;
-
-	asm volatile("movl %%cr2, %0" : "=r" (cr2));
-
-	print_color("PAGE FAULT: error=", 0x0c);
-	print_num_color(pt->number, 0x0c);
-	print_color("CR2=", 0x0c);
-	print_num_color(cr2, 0x0c);
-	show_regs(pt);
+	print_color("PAGE FAULT: ", 0x0c);
+	show_regs(pt, SHOW_ERROR);
 	halt();
 }
 
 extern void alignment_check(void);
 void do_alignment_check(struct pt_regs *pt)
 {
-	print_color("ALIGNMENT CHECK: error=", 0x0c);
-	print_num_color(pt->number, 0x0c);
-	show_regs(pt);
+	print_color("ALIGNMENT CHECK: ", 0x0c);
+	show_regs(pt, SHOW_ERROR);
 	halt();
 }
 
@@ -135,7 +151,7 @@ extern void machine_check(void);
 void do_machine_check(struct pt_regs *pt)
 {
 	print_color("MACHINE CHECK: ", 0x0c);
-	show_regs(pt);
+	show_regs(pt, 0);
 	halt();
 }
 
@@ -143,7 +159,7 @@ extern void default_fault_handler(void);
 void do_default_fault_handler(struct pt_regs *pt)
 {
 	print_color("UNHANDLED FAULT: ", 0x0c);
-	show_regs(pt);
+	show_regs(pt, 0);
 	halt();
 }
 
