@@ -1,6 +1,6 @@
 sources = [
   'irq.c',
-  'irq_entry.s',
+  'irq_entry.S',
   'output.c',
   'setup.c',
   'string.c',

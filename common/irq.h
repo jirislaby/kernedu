@@ -1,6 +1,11 @@
 #ifndef __IRQ_H_FILE
 #define __IRQ_H_FILE
 
+#define IRQ_DESCS	256
+#define IRQ_FIRST	0x20
+
+#ifndef __ASSEMBLER__
+
 struct pt_regs {
 	unsigned long ss;
 	unsigned long gs;
@@ -26,7 +31,7 @@ extern void init_irq(void);
 
 struct handler {
 	void (*handler)(unsigned int);
-	int irq;
+	unsigned int irq;
 };
 
 #define IRQ_HANDLER(func, irqn) \
@@ -35,5 +40,7 @@ struct handler {
 		.handler = func, \
 		.irq = irqn, \
 	}
+
+#endif
 
 #endif

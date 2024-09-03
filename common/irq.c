@@ -3,12 +3,10 @@
 #include <output.h>
 #include <setup.h>
 
-#define IDESCS		256
-
 struct idt_desc {
 	unsigned int a;
 	unsigned int b;
-} __attribute__((packed)) idesc[IDESCS] __attribute__((aligned(8))) = { };
+} __attribute__((packed)) idesc[IRQ_DESCS] __attribute__((aligned(8))) = { };
 
 struct idt {
 	unsigned short limit;
@@ -17,8 +15,8 @@ struct idt {
 
 static void default_handler(unsigned int irq);
 
-static void (*irq_handlers[IDESCS - 0x20])(unsigned int) = {
-	[ 0 ... IDESCS - 1 - 0x20 ] = default_handler
+static void (*irq_handlers[IRQ_DESCS - IRQ_FIRST])(unsigned int) = {
+	[ 0 ... IRQ_DESCS - 1 - IRQ_FIRST ] = default_handler
 };
 
 enum {
@@ -165,7 +163,17 @@ void do_default_fault_handler(struct pt_regs *pt)
 
 void do_irq(struct pt_regs *pt)
 {
-	irq_handlers[pt->number](pt->number);
+	unsigned int off = pt->number - IRQ_FIRST;
+
+	if (off >= ARRAY_SIZE(irq_handlers)) {
+		print(__func__);
+		print(": IRQ out of bounds: ");
+		print_num(pt->number);
+		print("\n");
+		return;
+	}
+
+	irq_handlers[off](pt->number);
 }
 
 static void default_handler(unsigned int irq)
@@ -196,7 +204,7 @@ static void setup_handlers(void)
 	const struct handler *h;
 	unsigned int a;
 
-	for (a = 0; a < 0x20; a++)
+	for (a = 0; a < IRQ_FIRST; a++)
 		set_intr(1, a, default_fault_handler);
 
 	set_intr(1, 0, div_by_zero);
@@ -220,11 +228,21 @@ static void setup_handlers(void)
 	 * jmp irq_handler
 	 * for each irq 0x20..0xff
 	 */
-	for (a = 0x20; a < IDESCS; a++)
-		set_intr(0, a, (void (*)(void))vectors[a - 0x20]);
+	for (a = IRQ_FIRST; a < IRQ_DESCS; a++)
+		set_intr(0, a, (void (*)(void))vectors[a - IRQ_FIRST]);
 
-	for (h = __handlers; h->handler; h++)
-		irq_handlers[h->irq] = h->handler;
+	for (h = __handlers; h->handler; h++) {
+		unsigned int off = h->irq - IRQ_FIRST;
+		if (off >= ARRAY_SIZE(irq_handlers)) {
+			print(__func__);
+			print(": IRQ handler out of bounds: ");
+			print_num(h->irq);
+			print_num((unsigned long)h->handler);
+			print("\n");
+			continue;
+		}
+		irq_handlers[off] = h->handler;
+	}
 }
 
 void init_irq(void)

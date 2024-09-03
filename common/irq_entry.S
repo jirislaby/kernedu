@@ -1,3 +1,5 @@
+#include <irq.h>
+
 .text
 
 .macro FAULT_HANDLER name,err
@@ -45,17 +47,17 @@
 .globl vectors
 vectors:
 
-.text			/* instructions in .text */
-irq=0x20		/* start at 32 */
+.text				/* instructions in .text */
+irq=IRQ_FIRST			/* start at 32 */
 vectors_code:
-.rept 256-0x20		/* repeat this 224 times */
- .align 4, 0x90		/* align with nops (0x90), just in case */
-1:	pushl $irq	/* number */
-	pushl $do_irq	/* handler (still the same) */
+.rept IRQ_DESCS-IRQ_FIRST	/* repeat this 224 times */
+ .align 4, 0x90			/* align with nops (0x90), just in case */
+1:	pushl $irq		/* number */
+	pushl $do_irq		/* handler (still the same) */
 	jmp irq_handler
- .previous		/* back to .rodata */
-	.long 1b	/* store the pointer */
- .text			/* and switch back to .text */
+ .previous			/* back to .rodata */
+	.long 1b		/* store the pointer */
+ .text				/* and switch back to .text */
  irq=irq+1
 .endr
 .previous	/* to .rodata */
